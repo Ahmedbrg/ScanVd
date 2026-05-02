@@ -6,14 +6,6 @@ Uses OpenAI Whisper for speech-to-text transcription with word-level timestamps.
 
 import os
 import sys
-<<<<<<< HEAD
-import uuid
-import shutil
-import subprocess
-import traceback
-import whisper
-import cv2
-=======
 import subprocess
 import whisper
 import cv2
@@ -21,7 +13,6 @@ import torch
 import numpy as np
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
->>>>>>> 6b84c23 (update)
 from ultralytics import YOLO
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,13 +20,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-<<<<<<< HEAD
-app = FastAPI(title="ScanVD - Video Content Scanner")
-=======
 # make the app
 app = FastAPI()
 app.title = "ScanVD - Video Content Scanner"
->>>>>>> 6b84c23 (update)
 
 # CORS for frontend
 app.add_middleware(
@@ -159,10 +146,6 @@ print("Loading YOLOv8 model...")
 yolo_model = YOLO("yolov8n.pt")
 print("YOLOv8 model loaded!")
 
-<<<<<<< HEAD
-def extract_objects(video_path, sample_rate_fps=1.0):
-    """Extract objects from video frames at a given FPS using YOLOv8."""
-=======
 # Load CLIP model for description search
 print("Loading CLIP model...")
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -172,7 +155,6 @@ print("CLIP model loaded!")
 
 def extract_visual_features(video_path, sample_rate_fps=1.0):
     """Extract objects and CLIP embeddings from video frames at a given FPS."""
->>>>>>> 6b84c23 (update)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return []
@@ -185,11 +167,7 @@ def extract_visual_features(video_path, sample_rate_fps=1.0):
     if frame_interval < 1:
         frame_interval = 1
 
-<<<<<<< HEAD
-    objects_timeline = []
-=======
     visual_timeline = []
->>>>>>> 6b84c23 (update)
     frame_count = 0
 
     while True:
@@ -209,13 +187,6 @@ def extract_visual_features(video_path, sample_rate_fps=1.0):
                 for c in r.boxes.cls:
                     detected_classes.add(yolo_model.names[int(c)])
             
-<<<<<<< HEAD
-            if detected_classes:
-                 objects_timeline.append({
-                     "timestamp": timestamp,
-                     "formatted_time": format_time(timestamp),
-                     "objects": list(detected_classes)
-=======
             # Run CLIP
             try:
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -243,26 +214,11 @@ def extract_visual_features(video_path, sample_rate_fps=1.0):
                      "formatted_time": format_time(timestamp),
                      "objects": list(detected_classes),
                      "clip_embedding": embedding
->>>>>>> 6b84c23 (update)
                  })
 
         frame_count += 1
 
     cap.release()
-<<<<<<< HEAD
-    return objects_timeline
-
-# In-memory store for transcriptions: { video_id: { segments: [...], full_text: str } }
-transcriptions = {}
-
-
-def format_time(seconds: float) -> str:
-    """Convert seconds to HH:MM:SS format."""
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    s = int(seconds % 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
-=======
     return visual_timeline
 
 # store the videos here
@@ -289,33 +245,11 @@ def format_time(seconds):
         
     result = str_h + ":" + str_m + ":" + str_s
     return result
->>>>>>> 6b84c23 (update)
 
 
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...)):
     """Upload a video file and transcribe it using Whisper."""
-<<<<<<< HEAD
-    # Validate file type
-    allowed_extensions = {".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv", ".wmv", ".m4v"}
-    ext = os.path.splitext(file.filename)[1].lower()
-    if ext not in allowed_extensions:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported file type '{ext}'. Allowed: {', '.join(allowed_extensions)}"
-        )
-
-    # Save uploaded file
-    video_id = str(uuid.uuid4())
-    video_filename = f"{video_id}{ext}"
-    video_path = os.path.join(UPLOAD_DIR, video_filename)
-
-    try:
-        with open(video_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
-=======
     # check file extension
     filename = file.filename
     ext = ""
@@ -354,7 +288,6 @@ async def upload_video(file: UploadFile = File(...)):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to save file!")
->>>>>>> 6b84c23 (update)
 
     # Check ffmpeg before attempting transcription
     if not FFMPEG_AVAILABLE:
@@ -376,17 +309,6 @@ async def upload_video(file: UploadFile = File(...)):
         )
         print(f"Transcription complete for: {file.filename}")
     except Exception as e:
-<<<<<<< HEAD
-        # Print full traceback to console so we can see what went wrong
-        print(f"\n{'='*60}")
-        print(f"ERROR transcribing {file.filename}:")
-        traceback.print_exc()
-        print(f"{'='*60}\n")
-        # Clean up file on error
-        if os.path.exists(video_path):
-            os.remove(video_path)
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
-=======
         # print error to console
         print("ERROR transcribing file:")
         print(e)
@@ -397,7 +319,6 @@ async def upload_video(file: UploadFile = File(...)):
             os.remove(video_path)
             
         raise HTTPException(status_code=500, detail="Transcription failed!")
->>>>>>> 6b84c23 (update)
 
     # Process segments with word-level detail
     segments = []
@@ -411,35 +332,6 @@ async def upload_video(file: UploadFile = File(...)):
             "text": segment["text"].strip(),
         }
 
-<<<<<<< HEAD
-        # Include word-level timestamps if available
-        if "words" in segment:
-            seg_data["words"] = [
-                {
-                    "word": w["word"].strip(),
-                    "start": w["start"],
-                    "end": w["end"],
-                    "start_formatted": format_time(w["start"]),
-                    "end_formatted": format_time(w["end"]),
-                }
-                for w in segment["words"]
-            ]
-
-        segments.append(seg_data)
-
-    # Detect objects in the video
-    try:
-        print(f"Detecting objects in video: {file.filename}...")
-        # Sample at 1 frame every 2 seconds to be faster, adjust as needed
-        objects_data = extract_objects(video_path, sample_rate_fps=0.5)
-        print(f"Object detection complete for: {file.filename}")
-    except Exception as e:
-        print(f"\n{'='*60}")
-        print(f"ERROR detecting objects in {file.filename}:")
-        traceback.print_exc()
-        print(f"{'='*60}\n")
-        objects_data = []
-=======
         # add words if they exist
         if "words" in segment:
             words_list = []
@@ -472,17 +364,12 @@ async def upload_video(file: UploadFile = File(...)):
     unique_objects = set()
     for item in visual_data:
         unique_objects.update(item["objects"])
->>>>>>> 6b84c23 (update)
 
     # Store transcription
     transcriptions[video_id] = {
         "segments": segments,
-<<<<<<< HEAD
-        "objects": objects_data,
-=======
         "visual_data": visual_data,
         "unique_objects": list(unique_objects),
->>>>>>> 6b84c23 (update)
         "full_text": result.get("text", ""),
         "language": result.get("language", "unknown"),
         "video_path": video_path,
@@ -496,10 +383,7 @@ async def upload_video(file: UploadFile = File(...)):
         "language": result.get("language", "unknown"),
         "full_text": result.get("text", ""),
         "segment_count": len(segments),
-<<<<<<< HEAD
-=======
         "unique_objects": list(unique_objects),
->>>>>>> 6b84c23 (update)
     }
 
 
@@ -556,16 +440,6 @@ async def search_video(request: SearchRequest):
 
             results.append(match)
 
-<<<<<<< HEAD
-    # Also do partial / fuzzy matching for words within segments
-    if not results:
-        query_words = query.split()
-        for segment in data["segments"]:
-            segment_text_lower = segment["text"].lower()
-            # Check if any query words appear individually
-            matching_words = [w for w in query_words if w in segment_text_lower]
-            if len(matching_words) >= max(1, len(query_words) // 2):
-=======
     # Also do partial fuzzy matching
     if len(results) == 0:
         query_words = query.split(" ")
@@ -584,7 +458,6 @@ async def search_video(request: SearchRequest):
                 half = 1
                 
             if len(matching_words) >= half:
->>>>>>> 6b84c23 (update)
                 results.append({
                     "segment_id": segment["id"],
                     "start": segment["start"],
@@ -596,21 +469,6 @@ async def search_video(request: SearchRequest):
                     "matched_words": matching_words,
                 })
 
-<<<<<<< HEAD
-    # Search through objects
-    for obj_frame in data.get("objects", []):
-        obj_text_lower = " ".join(obj_frame["objects"]).lower()
-        if query in obj_text_lower:
-            results.append({
-                "segment_id": f"obj_{obj_frame['timestamp']}",
-                "start": obj_frame["timestamp"],
-                "end": obj_frame["timestamp"] + 1,
-                "start_formatted": obj_frame["formatted_time"],
-                "end_formatted": format_time(obj_frame["timestamp"] + 1),
-                "text": f"Detected objects: {', '.join(obj_frame['objects'])}",
-                "match_type": "object",
-            })
-=======
     # 1. First encode query with CLIP
     query_embedding = None
     try:
@@ -670,7 +528,6 @@ async def search_video(request: SearchRequest):
                             "match_type": "description",
                             "similarity": float(similarity)
                         })
->>>>>>> 6b84c23 (update)
 
     # Sort results by start time
     results.sort(key=lambda x: x["start"])
@@ -708,10 +565,7 @@ async def get_transcript(video_id: str):
         "language": data["language"],
         "full_text": data["full_text"],
         "segments": data["segments"],
-<<<<<<< HEAD
-=======
         "unique_objects": data.get("unique_objects", []),
->>>>>>> 6b84c23 (update)
     }
 
 
