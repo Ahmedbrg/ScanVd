@@ -506,6 +506,49 @@ body {
 }
 
 /* ----- Transcript Toggle ----- */
+<<<<<<< HEAD
+=======
+.objects-container {
+    margin-bottom: 20px;
+    animation: fadeInUp 0.3s ease;
+}
+
+.objects-container.hidden {
+    display: none;
+}
+
+.objects-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.objects-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.object-tag {
+    font-size: 12px;
+    background: rgba(108, 92, 231, 0.1);
+    color: var(--accent-light);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.object-tag:hover {
+    background: rgba(108, 92, 231, 0.2);
+    border-color: rgba(108, 92, 231, 0.4);
+    transform: translateY(-1px);
+}
+
+>>>>>>> 6b84c23 (update)
 .transcript-toggle {
     margin-bottom: 20px;
 }
@@ -718,6 +761,14 @@ body {
     background: rgba(9, 132, 227, 0.12);
 }
 
+<<<<<<< HEAD
+=======
+.result-match-type.description {
+    color: #a29bfe;
+    background: rgba(162, 155, 254, 0.12);
+}
+
+>>>>>>> 6b84c23 (update)
 /* ----- No Results ----- */
 .no-results {
     text-align: center;
